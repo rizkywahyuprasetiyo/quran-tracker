@@ -49,7 +49,10 @@ export function useQuranTracker() {
     
     const calc = calculateProgress(currentAyat, startDate, targetCount, now);
     const currentSurah = getSurahFromKumulatif(currentAyat % 6236); // Wrap around for multiple hatam
-    const targetSurah = getSurahFromKumulatif(Math.floor(calc.targetAyat) % 6236);
+    
+    // Gunakan Math.round yang sama untuk sync antara ayat ke- dan surah
+    const roundedTargetAyat = Math.round(calc.targetAyat);
+    const targetSurah = getSurahFromKumulatif(roundedTargetAyat % 6236);
     
     return {
       currentAyat,
