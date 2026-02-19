@@ -26,7 +26,7 @@ export default function SetupForm() {
       lastUpdated: new Date().toISOString(),
     });
     
-    window.location.href = '/';
+    window.location.href = '/quran-tracker/';
   };
 
   const selectedSurah = SURAH_DATA.find(s => s[0] === parseInt(surahNumber.toString()));
