@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SetupForm from '../components/SetupForm';
+---
+
+<Layout title="Setup - Quran Tracker">
+  <SetupForm client:load />
+</Layout>
+
+<script>
+  import { hasSetup } from '../utils/storage';
+  
+  // Client-side redirect if already setup
+  if (hasSetup()) {
+    window.location.href = '/';
+  }
+</script>

@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import QuranTracker from '../components/QuranTracker';
+---
+
+<Layout title="Quran Tracker - Ramadhan 1447H">
+  <QuranTracker client:load />
+</Layout>
+
+<script>
+  import { hasSetup } from '../utils/storage';
+  
+  // Client-side redirect if not setup
+  if (!hasSetup()) {
+    window.location.href = '/setup';
+  }
+</script>

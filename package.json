@@ -1,0 +1,36 @@
+{
+  "name": "quran-tracker",
+  "version": "1.0.0",
+  "description": "Quran Ramadhan Tracker - Web App",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "keywords": [
+    "quran",
+    "tracker",
+    "ramadhan"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-select": "^2.2.6",
+    "@tailwindcss/vite": "^4.2.0",
+    "astro": "^5.17.3",
+    "cmdk": "^1.1.1",
+    "lucide-react": "^0.575.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwindcss": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
+  }
+}
