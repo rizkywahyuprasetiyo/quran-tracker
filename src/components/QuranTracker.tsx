@@ -35,13 +35,13 @@ export default function QuranTracker() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <header className="text-center">
-          <div className="flex justify-center mb-4">
-            <IconBook className="w-12 h-12 text-emerald-700" />
+          <div className="flex justify-center mb-3 md:mb-4">
+            <IconBook className="w-10 h-10 md:w-12 md:h-12 text-emerald-700" />
           </div>
-          <h1 className="text-3xl font-bold text-emerald-800 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-emerald-800 mb-2">
             Quran Tracker
           </h1>
-          <div className="flex items-center justify-center gap-2 text-gray-600">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-gray-600 text-sm md:text-base">
             <span>Target: {stats.targetCount}x Hatam | Ramadhan 1447H</span>
             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 animate-pulse">
               <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-ping"></span>
