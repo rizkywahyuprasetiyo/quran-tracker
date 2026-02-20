@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useQuranTracker } from '../hooks/useQuranTracker';
-import { TOTAL_PAGES, LINES_PER_PAGE } from '../data/pageData';
 import { clearAll } from '../utils/storage';
-import { formatDateTime, formatDate, getEndDate } from '../utils/calculations';
+import { formatDate, getEndDate } from '../utils/calculations';
 import ResetModal from './ResetModal';
-import { IconBook, IconLoader2, IconTarget, IconChartBar, IconRefresh, IconClock } from '@tabler/icons-react';
+import { IconBook, IconLoader2, IconTarget, IconRefresh } from '@tabler/icons-react';
 
 export default function QuranTracker() {
   const { stats } = useQuranTracker();
@@ -59,12 +58,8 @@ export default function QuranTracker() {
           <div className="text-6xl md:text-7xl font-bold mb-2">
             Hal. {stats.targetPosition.page}
           </div>
-          <div className="text-3xl md:text-4xl font-semibold text-white/90 mb-4">
+          <div className="text-3xl md:text-4xl font-semibold text-white/90">
             Baris {stats.targetPosition.line}
-          </div>
-          <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2 text-sm">
-            <IconClock className="w-4 h-4" />
-            {new Date().toLocaleTimeString('id-ID')}
           </div>
         </div>
 
@@ -108,59 +103,6 @@ export default function QuranTracker() {
           </div>
         </div>
 
-        {/* Statistics */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <IconChartBar className="w-5 h-5 text-purple-500" />
-            Statistik
-          </h3>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-emerald-50 rounded-xl">
-              <div className="text-2xl font-bold text-emerald-600">
-                {stats.pacePerHour.toFixed(2)}
-              </div>
-              <p className="text-xs text-gray-600">Halaman/Jam</p>
-            </div>
-
-            <div className="text-center p-4 bg-blue-50 rounded-xl">
-              <div className="text-2xl font-bold text-blue-600">
-                {stats.hoursElapsed.toFixed(1)}
-              </div>
-              <p className="text-xs text-gray-600">Jam Berlalu</p>
-            </div>
-
-            <div className="text-center p-4 bg-orange-50 rounded-xl">
-              <div className="text-2xl font-bold text-orange-600">
-                {stats.daysRemaining}
-              </div>
-              <p className="text-xs text-gray-600">Hari Tersisa</p>
-            </div>
-
-            <div className="text-center p-4 bg-purple-50 rounded-xl">
-              <div className="text-2xl font-bold text-purple-600">
-                {endDate ? formatDate(endDate) : '-'}
-              </div>
-              <p className="text-xs text-gray-600">Akhir Ramadhan</p>
-            </div>
-          </div>
-
-          <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Total Target:</span>
-              <span className="font-semibold">{stats.totalTargetPages} halaman</span>
-            </div>
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Target Saat Ini:</span>
-              <span className="font-semibold">{stats.targetDecimalPage.toFixed(2)} halaman</span>
-            </div>
-            <div className="flex justify-between text-sm text-gray-600">
-              <span>Total Waktu:</span>
-              <span className="font-semibold">{stats.totalHours.toFixed(1)} jam</span>
-            </div>
-          </div>
-        </div>
-
         {/* Footer */}
         <footer className="text-center pt-4">
           <button
@@ -171,7 +113,7 @@ export default function QuranTracker() {
             Reset Data
           </button>
           <p className="text-xs text-gray-400 mt-2">
-            Terakhir di-refresh: {formatDateTime(new Date())}
+            Akhir Ramadhan: {endDate ? formatDate(endDate) : '-'}
           </p>
         </footer>
       </div>
