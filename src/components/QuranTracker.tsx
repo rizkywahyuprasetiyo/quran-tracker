@@ -5,6 +5,7 @@ import { clearAll } from '../utils/storage';
 import { formatDateTime, formatDate, getEndDate } from '../utils/calculations';
 import ResetModal from './ResetModal';
 import { SurahSelect } from './SurahSelect';
+import { IconBook, IconLoader2, IconRocket, IconAlertTriangle, IconTarget, IconCheck, IconEdit, IconChartBar, IconRefresh } from '@tabler/icons-react';
 
 export default function QuranTracker() {
   const { progress, stats, updateProgress, refresh } = useQuranTracker();
@@ -16,7 +17,9 @@ export default function QuranTracker() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">⏳</div>
+          <div className="flex justify-center mb-4">
+            <IconLoader2 className="w-10 h-10 animate-spin text-emerald-600" />
+          </div>
           <p>Memuat data...</p>
         </div>
       </div>
@@ -42,7 +45,9 @@ export default function QuranTracker() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <header className="text-center">
-          <div className="text-5xl mb-4">📖</div>
+          <div className="flex justify-center mb-4">
+            <IconBook className="w-12 h-12 text-emerald-700" />
+          </div>
           <h1 className="text-3xl font-bold text-emerald-800 mb-2">
             Quran Tracker
           </h1>
@@ -59,7 +64,13 @@ export default function QuranTracker() {
         <div className={`rounded-2xl p-6 text-white ${stats.isAhead ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-3xl mb-2">{stats.isAhead ? '🚀' : '⚠️'}</div>
+              <div className="mb-2">
+                {stats.isAhead ? (
+                  <IconRocket className="w-8 h-8" />
+                ) : (
+                  <IconAlertTriangle className="w-8 h-8" />
+                )}
+              </div>
               <h2 className="text-2xl font-bold mb-1">
                 {stats.isAhead ? 'Alhamdulillah!' : 'Semangat!'}
               </h2>
@@ -109,9 +120,10 @@ export default function QuranTracker() {
         {/* Target Comparison */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              🎯 Target Saat Ini
-            </h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <IconTarget className="w-5 h-5 text-orange-500" />
+            Target Saat Ini
+          </h3>
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-400 mb-1">
                 {stats.targetSurah.name}
@@ -126,8 +138,9 @@ export default function QuranTracker() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              ✅ Progress Anda
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <IconCheck className="w-5 h-5 text-emerald-600" />
+              Progress Anda
             </h3>
             
             <div className="text-center">
@@ -146,8 +159,9 @@ export default function QuranTracker() {
 
         {/* Update Form */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            📝 Update Progress
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <IconEdit className="w-5 h-5 text-blue-500" />
+            Update Progress
           </h3>
           
           <div className="grid md:grid-cols-3 gap-4">
@@ -184,16 +198,18 @@ export default function QuranTracker() {
 
           <button
             onClick={handleUpdate}
-            className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            Update Progress ✅
+            Update Progress
+            <IconCheck className="w-5 h-5" />
           </button>
         </div>
 
         {/* Statistics */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            📊 Statistik
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <IconChartBar className="w-5 h-5 text-purple-500" />
+            Statistik
           </h3>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -236,9 +252,7 @@ export default function QuranTracker() {
             onClick={() => setIsResetModalOpen(true)}
             className="text-sm text-gray-500 hover:text-red-500 transition-colors inline-flex items-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
+            <IconRefresh className="h-4 w-4" />
             Reset Data
           </button>
           <p className="text-xs text-gray-400 mt-2">

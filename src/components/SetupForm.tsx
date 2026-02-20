@@ -3,6 +3,7 @@ import { saveConfig, saveProgress } from '../utils/storage';
 import { SURAH_DATA, TOTAL_AYAT } from '../data/surahData';
 import { getEndDate } from '../utils/calculations';
 import { SurahSelect } from './SurahSelect';
+import { IconBook, IconChartBar, IconRocket } from '@tabler/icons-react';
 
 export default function SetupForm() {
   const [startDate, setStartDate] = useState('2026-02-19');
@@ -36,7 +37,9 @@ export default function SetupForm() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-4">📖</div>
+          <div className="flex justify-center mb-4">
+            <IconBook className="w-12 h-12 text-emerald-700" />
+          </div>
           <h1 className="text-2xl font-bold text-emerald-800 mb-2">
             Quran Tracker
           </h1>
@@ -121,7 +124,10 @@ export default function SetupForm() {
           </div>
 
           <div className="bg-emerald-50 rounded-lg p-4 text-sm text-emerald-800">
-            <p className="font-medium">📊 Informasi Target:</p>
+            <p className="font-medium flex items-center gap-2">
+            <IconChartBar className="w-4 h-4" />
+            Informasi Target:
+          </p>
             <p>Total Ayat: {TOTAL_AYAT * targetCount} ayat ({targetCount}x hatam)</p>
             <p>Periode Ramadhan: 29 hari</p>
             <p>Mulai: {new Date(startDate).toLocaleDateString('id-ID')}</p>
@@ -130,9 +136,10 @@ export default function SetupForm() {
 
           <button
             type="submit"
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            Mulai Tracking 🚀
+            Mulai Tracking
+            <IconRocket className="w-5 h-5" />
           </button>
         </form>
       </div>

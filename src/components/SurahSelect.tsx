@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Check, ChevronsUpDown, Search } from "lucide-react"
+import { IconCheck, IconSelector, IconSearch } from "@tabler/icons-react"
 import * as Popover from "@radix-ui/react-popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "cmdk"
 import { SURAH_DATA } from "../data/surahData"
@@ -27,7 +27,7 @@ export function SurahSelect({ value, onChange }: SurahSelectProps) {
               : "Pilih Surah..."
             }
           </span>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <IconSelector className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </button>
       </Popover.Trigger>
       
@@ -39,7 +39,7 @@ export function SurahSelect({ value, onChange }: SurahSelectProps) {
         >
           <Command className="overflow-hidden">
             <div className="flex items-center border-b border-gray-100 px-3">
-              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              <IconSearch className="mr-2 h-4 w-4 shrink-0 opacity-50" />
               <CommandInput
                 placeholder="Cari surah..."
                 className="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-gray-400 disabled:cursor-not-allowed disabled:opacity-50"
@@ -61,7 +61,7 @@ export function SurahSelect({ value, onChange }: SurahSelectProps) {
                   }}
                   className="relative flex cursor-default select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-gray-100 data-[selected=true]:bg-gray-100"
                 >
-                  <Check
+                  <IconCheck
                     className={`mr-2 h-4 w-4 ${
                       value === surah[0] ? "opacity-100" : "opacity-0"
                     }`}
