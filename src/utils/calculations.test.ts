@@ -1,10 +1,11 @@
-import { 
-  getEndDate, 
-  getHoursElapsed, 
-  getTotalTargetPages, 
+import {
+  getEndDate,
+  getHoursElapsed,
+  getTotalTargetPages,
   getTargetDecimalPage,
   decimalToPageLine,
-  calculateTargetStats
+  calculateTargetStats,
+  compareActualVsTarget
 } from './calculations';
 import { TOTAL_PAGES, LINES_PER_PAGE } from '../data/pageData';
 
@@ -101,5 +102,80 @@ assertEqual(targetAfter, 604, 'After end should cap at page 604');
 const stats2Hatam = calculateTargetStats(startTest, 2, halfwayDate);
 assert(stats2Hatam.totalTargetPages === 1208, '2 hatam should have 1208 total pages');
 assert(stats2Hatam.currentHatam >= 1 && stats2Hatam.currentHatam <= 2, 'Should be in hatam 1 or 2');
+
+// Test 7: compareActualVsTarget
+console.log('\n⚖️ Testing compareActualVsTarget...');
+
+// Test ahead scenario
+const aheadResult = compareActualVsTarget(
+  { page: 50, line: 10 },
+  { page: 45, line: 5 }
+);
+assert(aheadResult.status === 'ahead', 'Should be ahead when actual > target');
+assert(aheadResult.totalDifferenceDecimal > 0, 'Difference should be positive when ahead');
+console.log(`   Ahead message: "${aheadResult.message}"`);
+
+// Test behind scenario
+const behindResult = compareActualVsTarget(
+  { page: 40, line: 5 },
+  { page: 45, line: 10 }
+);
+assert(behindResult.status === 'behind', 'Should be behind when actual < target');
+assert(behindResult.totalDifferenceDecimal < 0, 'Difference should be negative when behind');
+console.log(`   Behind message: "${behindResult.message}"`);
+
+// Test on-track scenario (within tolerance)
+const onTrackResult = compareActualVsTarget(
+  { page: 45, line: 8 },
+  { page: 45, line: 5 }
+);
+assert(onTrackResult.status === 'on-track', 'Should be on-track when within tolerance');
+assert(onTrackResult.message === 'Sesuai target', 'On-track message should be "Sesuai target"');
+console.log(`   On-track message: "${onTrackResult.message}"`);
+
+// Test exact same position
+const exactResult = compareActualVsTarget(
+  { page: 50, line: 10 },
+  { page: 50, line: 10 }
+);
+assert(exactResult.status === 'on-track', 'Exact same position should be on-track');
+assert(exactResult.totalDifferenceDecimal === 0, 'Difference should be 0 for exact match');
+console.log(`   Exact match message: "${exactResult.message}"`);
+
+// Test edge case: page 1, line 1
+const edgeStartResult = compareActualVsTarget(
+  { page: 1, line: 1 },
+  { page: 1, line: 1 }
+);
+assert(edgeStartResult.status === 'on-track', 'Start position should be on-track');
+console.log(`   Edge case (1,1) message: "${edgeStartResult.message}"`);
+
+// Test edge case: last page, last line
+const edgeEndResult = compareActualVsTarget(
+  { page: 604, line: 15 },
+  { page: 604, line: 10 }
+);
+assert(edgeEndResult.status === 'ahead' || edgeEndResult.status === 'on-track', 'End position should be ahead or on-track');
+console.log(`   Edge case (604,15) message: "${edgeEndResult.message}"`);
+
+// Test line difference calculation
+const lineDiffResult = compareActualVsTarget(
+  { page: 10, line: 15 },
+  { page: 10, line: 1 }
+);
+assert(lineDiffResult.lineDifference === 14, 'Line difference should be 14');
+assert(lineDiffResult.pageDifference === 0, 'Page difference should be 0');
+// 14 lines difference = 14/15 = 0.933 pages, within tolerance
+assert(lineDiffResult.status === 'on-track', '14 lines difference should still be on-track (within 1 page tolerance)');
+console.log(`   Line diff test: pageDiff=${lineDiffResult.pageDifference}, lineDiff=${lineDiffResult.lineDifference}`);
+
+// Test page difference calculation
+const pageDiffResult = compareActualVsTarget(
+  { page: 100, line: 1 },
+  { page: 95, line: 1 }
+);
+assert(pageDiffResult.pageDifference === 5, 'Page difference should be 5');
+assert(pageDiffResult.status === 'ahead', '5 pages ahead should be ahead status');
+console.log(`   Page diff test: pageDiff=${pageDiffResult.pageDifference}, status=${pageDiffResult.status}`);
 
 console.log('\n🎉 All tests passed!');

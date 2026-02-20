@@ -3,10 +3,11 @@ import { useQuranTracker } from '../hooks/useQuranTracker';
 import { clearAll } from '../utils/storage';
 import { formatDate, getEndDate } from '../utils/calculations';
 import ResetModal from './ResetModal';
-import { IconBook, IconLoader2, IconTarget, IconRefresh } from '@tabler/icons-react';
+import ActualPositionInput from './ActualPositionInput';
+import { IconBook, IconLoader2, IconTarget, IconRefresh, IconTrophy, IconArrowUp, IconArrowDown, IconMinus } from '@tabler/icons-react';
 
 export default function QuranTracker() {
-  const { stats } = useQuranTracker();
+  const { stats, saveActualPosition, clearActualPosition, hasActualPosition } = useQuranTracker();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   if (!stats) {
@@ -28,6 +29,30 @@ export default function QuranTracker() {
   };
 
   const endDate = getEndDate(new Date(stats.startDate || new Date()));
+
+  const getStatusIcon = () => {
+    if (!stats.comparison) return null;
+    switch (stats.comparison.status) {
+      case 'ahead':
+        return <IconArrowUp className="w-5 h-5 text-green-600" />;
+      case 'behind':
+        return <IconArrowDown className="w-5 h-5 text-red-600" />;
+      case 'on-track':
+        return <IconMinus className="w-5 h-5 text-yellow-600" />;
+    }
+  };
+
+  const getStatusColor = () => {
+    if (!stats.comparison) return 'bg-gray-100 text-gray-600';
+    switch (stats.comparison.status) {
+      case 'ahead':
+        return 'bg-green-100 text-green-700 border-green-200';
+      case 'behind':
+        return 'bg-red-100 text-red-700 border-red-200';
+      case 'on-track':
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+    }
+  };
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -63,21 +88,70 @@ export default function QuranTracker() {
           </div>
         </div>
 
+        {/* Comparison Section - Only show if actual position is set */}
+        {hasActualPosition && stats.comparison && (
+          <div className={`rounded-2xl p-6 border-2 ${getStatusColor()} transition-all`}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <IconTrophy className="w-5 h-5" />
+                Status Progress
+              </h3>
+              <div className="flex items-center gap-2">
+                {getStatusIcon()}
+                <span className="font-bold">{stats.comparison.message}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/50 rounded-xl p-4 text-center">
+                <p className="text-sm opacity-70 mb-1">Posisi Kamu</p>
+                <p className="text-2xl font-bold">
+                  Hal. {stats.actualPosition?.page}, Baris {stats.actualPosition?.line}
+                </p>
+              </div>
+              <div className="bg-white/50 rounded-xl p-4 text-center">
+                <p className="text-sm opacity-70 mb-1">Target</p>
+                <p className="text-2xl font-bold">
+                  Hal. {stats.targetPosition.page}, Baris {stats.targetPosition.line}
+                </p>
+              </div>
+            </div>
+
+            {stats.comparison.pageDifference !== 0 && (
+              <div className="mt-4 text-center text-sm opacity-80">
+                {stats.comparison.pageDifference > 0 ? (
+                  <span>🎉 Luar biasa! Kamu {Math.abs(stats.comparison.pageDifference)} halaman di depan target</span>
+                ) : stats.comparison.pageDifference < 0 ? (
+                  <span>💪 Tetap semangat! Kamu {Math.abs(stats.comparison.pageDifference)} halaman di belakang target</span>
+                ) : null}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Actual Position Input */}
+        <ActualPositionInput
+          onSave={saveActualPosition}
+          onClear={clearActualPosition}
+          currentPage={stats.actualPosition?.page}
+          currentLine={stats.actualPosition?.line}
+        />
+
         {/* Progress Hatam */}
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Progress Hatam
           </h3>
-          
+
           <div className="mb-4">
             <div className="h-6 bg-gray-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
                 style={{ width: `${stats.totalProgressPercentage}%` }}
               />
             </div>
           </div>
-          
+
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">
               Hatam ke-{stats.currentHatam} dari {stats.targetCount}
@@ -86,7 +160,7 @@ export default function QuranTracker() {
               {stats.totalProgressPercentage.toFixed(1)}%
             </span>
           </div>
-          
+
           <div className="mt-4 grid grid-cols-2 gap-4 text-center">
             <div className="bg-emerald-50 rounded-xl p-4">
               <div className="text-2xl font-bold text-emerald-600">

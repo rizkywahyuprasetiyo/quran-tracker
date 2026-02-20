@@ -1,35 +1,13 @@
-export interface TrackerConfig {
-  startDate: string;
-  targetCount: number; // Target jumlah hatam (1, 2, 3, etc.)
-}
+import { type PagePosition } from '../data/pageData';
 
-export interface ActualPosition {
-  page: number;
-  line: number;
+export interface ActualPositionWithMeta extends PagePosition {
   updatedAt: string;
 }
 
-const CONFIG_KEY = 'quran-tracker-config';
 const ACTUAL_POSITION_KEY = 'quran-tracker-actual-position';
 
 function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
-}
-
-export function saveConfig(config: TrackerConfig): void {
-  if (!isBrowser()) return;
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
-}
-
-export function getConfig(): TrackerConfig | null {
-  if (!isBrowser()) return null;
-  const stored = localStorage.getItem(CONFIG_KEY);
-  return stored ? JSON.parse(stored) : null;
-}
-
-export function hasSetup(): boolean {
-  if (!isBrowser()) return false;
-  return getConfig() !== null;
 }
 
 /**
@@ -38,7 +16,7 @@ export function hasSetup(): boolean {
 export function saveActualPosition(page: number, line: number): void {
   if (!isBrowser()) return;
 
-  const position: ActualPosition = {
+  const position: ActualPositionWithMeta = {
     page,
     line,
     updatedAt: new Date().toISOString(),
@@ -50,8 +28,9 @@ export function saveActualPosition(page: number, line: number): void {
 /**
  * Get actual reading position from localStorage
  */
-export function getActualPosition(): ActualPosition | null {
+export function getActualPosition(): ActualPositionWithMeta | null {
   if (!isBrowser()) return null;
+
   const stored = localStorage.getItem(ACTUAL_POSITION_KEY);
   return stored ? JSON.parse(stored) : null;
 }
@@ -69,11 +48,5 @@ export function hasActualPosition(): boolean {
  */
 export function clearActualPosition(): void {
   if (!isBrowser()) return;
-  localStorage.removeItem(ACTUAL_POSITION_KEY);
-}
-
-export function clearAll(): void {
-  if (!isBrowser()) return;
-  localStorage.removeItem(CONFIG_KEY);
   localStorage.removeItem(ACTUAL_POSITION_KEY);
 }

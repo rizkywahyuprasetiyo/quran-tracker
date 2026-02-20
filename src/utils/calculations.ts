@@ -3,6 +3,16 @@ import { TOTAL_PAGES, LINES_PER_PAGE, type PagePosition } from '../data/pageData
 // Ramadhan selama 29 hari (bisa jadi 30 jika hilal tidak terlihat)
 const RAMADHAN_DAYS = 29;
 
+export type ComparisonStatus = 'ahead' | 'on-track' | 'behind';
+
+export interface ComparisonResult {
+  status: ComparisonStatus;
+  pageDifference: number; // Positive = ahead, negative = behind
+  lineDifference: number;
+  totalDifferenceDecimal: number; // Total difference in decimal pages
+  message: string;
+}
+
 export function getEndDate(startDate: Date): Date {
   const endDate = new Date(startDate);
   endDate.setDate(startDate.getDate() + RAMADHAN_DAYS);
@@ -124,4 +134,49 @@ export function formatDateTime(date: Date): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+/**
+ * Compare actual reading position vs target position
+ * @param actual - Actual page and line read by user
+ * @param target - Target page and line based on time elapsed
+ * @returns Comparison result with status and difference
+ */
+export function compareActualVsTarget(
+  actual: PagePosition,
+  target: PagePosition
+): ComparisonResult {
+  // Convert both to decimal for accurate comparison
+  const actualDecimal = actual.page + (actual.line - 1) / LINES_PER_PAGE;
+  const targetDecimal = target.page + (target.line - 1) / LINES_PER_PAGE;
+
+  const totalDifferenceDecimal = actualDecimal - targetDecimal;
+  const pageDifference = actual.page - target.page;
+  const lineDifference = actual.line - target.line;
+
+  // Determine status with tolerance (within 1 page = on track)
+  const tolerance = 1.0; // 1 page tolerance
+  let status: ComparisonStatus;
+  let message: string;
+
+  if (totalDifferenceDecimal > tolerance) {
+    status = 'ahead';
+    const pagesAhead = Math.abs(totalDifferenceDecimal).toFixed(1);
+    message = `+${pagesAhead} halaman di depan`;
+  } else if (totalDifferenceDecimal < -tolerance) {
+    status = 'behind';
+    const pagesBehind = Math.abs(totalDifferenceDecimal).toFixed(1);
+    message = `-${pagesBehind} halaman tertinggal`;
+  } else {
+    status = 'on-track';
+    message = 'Sesuai target';
+  }
+
+  return {
+    status,
+    pageDifference,
+    lineDifference,
+    totalDifferenceDecimal,
+    message,
+  };
 }
