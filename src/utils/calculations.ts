@@ -1,4 +1,4 @@
-import { TOTAL_AYAT } from '../data/surahData';
+import { TOTAL_PAGES, LINES_PER_PAGE, type PagePosition } from '../data/pageData';
 
 // Ramadhan selama 29 hari (bisa jadi 30 jika hilal tidak terlihat)
 const RAMADHAN_DAYS = 29;
@@ -14,89 +14,97 @@ export function getHoursElapsed(startDate: Date, now: Date = new Date()): number
   return (now.getTime() - startDate.getTime()) / (1000 * 60 * 60);
 }
 
-export function getTotalTargetAyat(targetCount: number): number {
-  return TOTAL_AYAT * targetCount;
+export function getTotalTargetPages(targetCount: number): number {
+  return TOTAL_PAGES * targetCount;
 }
 
-export function getTargetAyat(
-  currentAyat: number,
-  startDate: Date, 
+// Hitung target halaman desimal berdasarkan waktu yang telah berlalu
+export function getTargetDecimalPage(
+  startDate: Date,
   targetCount: number,
   now: Date = new Date()
 ): number {
   const endDate = getEndDate(startDate);
   const totalHours = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
-  const totalTargetAyat = getTotalTargetAyat(targetCount);
-  const pacePerHour = totalTargetAyat / totalHours;
+  const totalTargetPages = getTotalTargetPages(targetCount);
+  const pacePerHour = totalTargetPages / totalHours;
   const hoursElapsed = getHoursElapsed(startDate, now);
   
-  let target = hoursElapsed * pacePerHour;
-  if (target > totalTargetAyat) target = totalTargetAyat;
+  let targetDecimalPage = hoursElapsed * pacePerHour;
+  if (targetDecimalPage > totalTargetPages) targetDecimalPage = totalTargetPages;
+  if (targetDecimalPage < 1) targetDecimalPage = 1;
   
-  return target;
+  return targetDecimalPage;
 }
 
-export function calculateProgress(
-  currentAyat: number,
+// Konversi halaman desimal ke page + line
+export function decimalToPageLine(decimalPage: number): PagePosition {
+  const page = Math.floor(decimalPage);
+  // Line: 1-15 berdasarkan desimal
+  const line = Math.ceil((decimalPage - page) * LINES_PER_PAGE);
+  
+  return {
+    page: Math.min(Math.max(page, 1), TOTAL_PAGES),
+    line: Math.min(Math.max(line, 1), LINES_PER_PAGE),
+  };
+}
+
+// Hitung semua statistik untuk ditampilkan
+export function calculateTargetStats(
   startDate: Date,
   targetCount: number,
   now: Date = new Date()
 ): {
-  percentage: number;
-  totalPercentage: number;
-  targetAyat: number;
-  diff: number;
-  diffHours: number;
-  isAhead: boolean;
-  pace: number;
-  finishDate: Date | null;
-  daysFromTarget: number;
+  targetDecimalPage: number;
+  targetPosition: PagePosition;
   currentHatam: number;
   progressInCurrentHatam: number;
-  targetCount: number;
+  totalProgressPercentage: number;
+  currentHatamPercentage: number;
+  pacePerHour: number;
+  hoursElapsed: number;
+  totalHours: number;
+  hoursRemaining: number;
+  daysRemaining: number;
+  totalTargetPages: number;
+  formattedTarget: string;
 } {
-  const endDate = getEndDate(startDate);
-  const totalTargetAyat = getTotalTargetAyat(targetCount);
-  const totalPercentage = (currentAyat / totalTargetAyat) * 100;
+  const targetDecimalPage = getTargetDecimalPage(startDate, targetCount, now);
+  const targetPosition = decimalToPageLine(targetDecimalPage % TOTAL_PAGES || TOTAL_PAGES);
   
-  // Calculate current hatam (which completion cycle)
-  const currentHatam = Math.floor(currentAyat / TOTAL_AYAT) + 1;
-  const ayatInCurrentHatam = currentAyat % TOTAL_AYAT;
-  const percentage = (ayatInCurrentHatam / TOTAL_AYAT) * 100;
-  const progressInCurrentHatam = ayatInCurrentHatam;
+  // Hitung hatam saat ini
+  const currentHatam = Math.ceil(targetDecimalPage / TOTAL_PAGES);
+  const progressInCurrentHatam = targetDecimalPage % TOTAL_PAGES || TOTAL_PAGES;
   
-  const targetAyat = getTargetAyat(currentAyat, startDate, targetCount, now);
-  const diff = currentAyat - targetAyat;
-  const totalHours = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
-  const pacePerHour = totalTargetAyat / totalHours;
-  const diffHours = diff / pacePerHour;
-  const isAhead = diff >= 0;
+  // Persentase progress
+  const totalTargetPages = getTotalTargetPages(targetCount);
+  const totalProgressPercentage = (targetDecimalPage / totalTargetPages) * 100;
+  const currentHatamPercentage = (progressInCurrentHatam / TOTAL_PAGES) * 100;
   
+  // Pace dan waktu
+  const totalHours = (getEndDate(startDate).getTime() - startDate.getTime()) / (1000 * 60 * 60);
+  const pacePerHour = totalTargetPages / totalHours;
   const hoursElapsed = getHoursElapsed(startDate, now);
-  const pace = hoursElapsed > 0 ? currentAyat / hoursElapsed : pacePerHour;
+  const hoursRemaining = Math.max(totalHours - hoursElapsed, 0);
+  const daysRemaining = Math.ceil(hoursRemaining / 24);
   
-  let finishDate: Date | null = null;
-  let daysFromTarget = 0;
-  
-  if (currentAyat > 0 && pace > 0) {
-    const hoursNeeded = (totalTargetAyat - currentAyat) / pace;
-    finishDate = new Date(now.getTime() + hoursNeeded * 60 * 60 * 1000);
-    daysFromTarget = Math.ceil((finishDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
-  }
+  // Format untuk display
+  const formattedTarget = `Halaman ${targetPosition.page}, Baris ${targetPosition.line}`;
   
   return {
-    percentage,
-    totalPercentage,
-    targetAyat,
-    diff,
-    diffHours,
-    isAhead,
-    pace,
-    finishDate,
-    daysFromTarget,
+    targetDecimalPage,
+    targetPosition,
     currentHatam,
     progressInCurrentHatam,
-    targetCount,
+    totalProgressPercentage,
+    currentHatamPercentage,
+    pacePerHour,
+    hoursElapsed,
+    totalHours,
+    hoursRemaining,
+    daysRemaining,
+    totalTargetPages,
+    formattedTarget,
   };
 }
 

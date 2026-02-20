@@ -1,21 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
-import { getConfig, getProgress, saveProgress, hasSetup, type TrackerConfig, type TrackerProgress } from '../utils/storage';
-import { calculateProgress } from '../utils/calculations';
-import { getAyatKumulatif, getSurahFromKumulatif } from '../data/surahData';
+import { useState, useEffect } from 'react';
+import { getConfig, hasSetup, type TrackerConfig } from '../utils/storage';
+import { calculateTargetStats } from '../utils/calculations';
 
 export function useQuranTracker() {
   const [config, setConfig] = useState<TrackerConfig | null>(null);
-  const [progress, setProgress] = useState<TrackerProgress | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
     const storedConfig = getConfig();
-    const storedProgress = getProgress();
     
-    if (storedConfig && storedProgress) {
+    if (storedConfig) {
       setConfig(storedConfig);
-      setProgress(storedProgress);
     }
     
     setIsLoading(false);
@@ -25,52 +21,31 @@ export function useQuranTracker() {
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
-    }, 1000); // Update every 1 second
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const updateProgress = useCallback((surahNumber: number, ayatNumber: number) => {
-    const newProgress: TrackerProgress = {
-      surahNumber,
-      ayatNumber,
-      lastUpdated: new Date().toISOString(),
-    };
-    
-    saveProgress(newProgress);
-    setProgress(newProgress);
-  }, []);
-
   const stats = (() => {
-    if (!config || !progress) return null;
+    if (!config) return null;
     
     const startDate = new Date(config.startDate);
-    const targetCount = config.targetCount || 1; // Default to 1 if not set
-    const currentAyat = getAyatKumulatif(progress.surahNumber, progress.ayatNumber) || 0;
+    const targetCount = config.targetCount || 1;
     
-    const calc = calculateProgress(currentAyat, startDate, targetCount, now);
-    const currentSurah = getSurahFromKumulatif(currentAyat % 6236); // Wrap around for multiple hatam
-    
-    // Gunakan Math.round yang sama untuk sync antara ayat ke- dan surah
-    const roundedTargetAyat = Math.round(calc.targetAyat);
-    const targetSurah = getSurahFromKumulatif(roundedTargetAyat % 6236);
+    const calc = calculateTargetStats(startDate, targetCount, now);
     
     return {
-      currentAyat,
-      currentSurah,
-      targetSurah,
       startDate: config.startDate,
+      targetCount,
       ...calc,
     };
   })();
 
   return {
     config,
-    progress,
     stats,
     isLoading,
     isSetup: hasSetup(),
-    updateProgress,
     refresh: () => setNow(new Date()),
-    now, // Export now untuk live clock
+    now,
   };
 }

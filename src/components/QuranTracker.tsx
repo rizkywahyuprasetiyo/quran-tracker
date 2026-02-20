@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import { useQuranTracker } from '../hooks/useQuranTracker';
-import { SURAH_DATA, TOTAL_AYAT } from '../data/surahData';
+import { TOTAL_PAGES, LINES_PER_PAGE } from '../data/pageData';
 import { clearAll } from '../utils/storage';
 import { formatDateTime, formatDate, getEndDate } from '../utils/calculations';
 import ResetModal from './ResetModal';
-import { SurahSelect } from './SurahSelect';
-import { IconBook, IconLoader2, IconRocket, IconAlertTriangle, IconTarget, IconCheck, IconEdit, IconChartBar, IconRefresh } from '@tabler/icons-react';
+import { IconBook, IconLoader2, IconTarget, IconChartBar, IconRefresh, IconClock } from '@tabler/icons-react';
 
 export default function QuranTracker() {
-  const { progress, stats, updateProgress, refresh } = useQuranTracker();
-  const [surahNumber, setSurahNumber] = useState(progress?.surahNumber || 1);
-  const [ayatNumber, setAyatNumber] = useState(progress?.ayatNumber || 1);
+  const { stats } = useQuranTracker();
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   if (!stats) {
@@ -25,13 +22,6 @@ export default function QuranTracker() {
       </div>
     );
   }
-
-  const selectedSurah = SURAH_DATA.find(s => s[0] === surahNumber);
-  const maxAyat = selectedSurah ? selectedSurah[2] : 7;
-
-  const handleUpdate = () => {
-    updateProgress(surahNumber, ayatNumber);
-  };
 
   const handleReset = () => {
     clearAll();
@@ -60,35 +50,21 @@ export default function QuranTracker() {
           </div>
         </header>
 
-        {/* Status Card */}
-        <div className={`rounded-2xl p-6 text-white ${stats.isAhead ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gradient-to-r from-orange-500 to-red-500'}`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="mb-2">
-                {stats.isAhead ? (
-                  <IconRocket className="w-8 h-8" />
-                ) : (
-                  <IconAlertTriangle className="w-8 h-8" />
-                )}
-              </div>
-              <h2 className="text-2xl font-bold mb-1">
-                {stats.isAhead ? 'Alhamdulillah!' : 'Semangat!'}
-              </h2>
-              <p className="text-white/90">
-                {stats.isAhead 
-                  ? `Anda di depan target ${Math.round(stats.diff)} ayat`
-                  : `Anda perlu catch up ${Math.round(Math.abs(stats.diff))} ayat`
-                }
-              </p>
-            </div>
-            <div className="text-right">
-              <div className="text-5xl font-bold">
-                Hatam ke-{stats.currentHatam}
-              </div>
-              <p className="text-white/80">
-                dari {stats.targetCount} target
-              </p>
-            </div>
+        {/* Target Halaman Card - Main Display */}
+        <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-8 text-white text-center">
+          <h2 className="text-lg font-medium text-white/80 mb-2 flex items-center justify-center gap-2">
+            <IconTarget className="w-5 h-5" />
+            Target Saat Ini
+          </h2>
+          <div className="text-6xl md:text-7xl font-bold mb-2">
+            Hal. {stats.targetPosition.page}
+          </div>
+          <div className="text-3xl md:text-4xl font-semibold text-white/90 mb-4">
+            Baris {stats.targetPosition.line}
+          </div>
+          <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2 text-sm">
+            <IconClock className="w-4 h-4" />
+            {new Date().toLocaleTimeString('id-ID')}
           </div>
         </div>
 
@@ -102,107 +78,34 @@ export default function QuranTracker() {
             <div className="h-6 bg-gray-200 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
-                style={{ width: `${stats.totalPercentage}%` }}
+                style={{ width: `${stats.totalProgressPercentage}%` }}
               />
             </div>
           </div>
           
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600">
-              {Math.round(stats.currentAyat)} / {Math.round(TOTAL_AYAT * stats.targetCount)} ayat
+              Hatam ke-{stats.currentHatam} dari {stats.targetCount}
             </span>
             <span className="font-bold text-emerald-600">
-              {stats.totalPercentage.toFixed(1)}%
+              {stats.totalProgressPercentage.toFixed(1)}%
             </span>
           </div>
-        </div>
-
-        {/* Target Comparison */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <IconTarget className="w-5 h-5 text-orange-500" />
-            Target Saat Ini
-          </h3>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-400 mb-1">
-                {stats.targetSurah.name}
-              </div>
-              <div className="text-5xl font-bold text-emerald-600 mb-2">
-                {stats.targetSurah.ayat}
-              </div>
-              <p className="text-sm text-gray-500 tabular-nums">
-                Ayat ke-{Math.round(stats.targetAyat || 0)}
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <IconCheck className="w-5 h-5 text-emerald-600" />
-              Progress Anda
-            </h3>
-            
-            <div className="text-center">
-              <div className="text-3xl font-bold text-gray-800 mb-1">
-                {stats.currentSurah.name}
-              </div>
-              <div className="text-5xl font-bold text-emerald-600 mb-2">
-                {stats.currentSurah.ayat}
-              </div>
-              <p className="text-sm text-gray-500">
-                Surah ke-{stats.currentSurah.number} dari 114
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Update Form */}
-        <div className="bg-white rounded-2xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            <IconEdit className="w-5 h-5 text-blue-500" />
-            Update Progress
-          </h3>
           
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Surah
-              </label>
-              <SurahSelect
-                value={surahNumber}
-                onChange={(value) => {
-                  setSurahNumber(value);
-                  setAyatNumber(1);
-                }}
-              />
+          <div className="mt-4 grid grid-cols-2 gap-4 text-center">
+            <div className="bg-emerald-50 rounded-xl p-4">
+              <div className="text-2xl font-bold text-emerald-600">
+                {stats.progressInCurrentHatam.toFixed(1)}
+              </div>
+              <p className="text-xs text-gray-600">Halaman (Hatam Ini)</p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Ayat
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={maxAyat}
-                value={ayatNumber}
-                onChange={(e) => setAyatNumber(parseInt(e.target.value) || 1)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                1-{maxAyat}
-              </p>
+            <div className="bg-teal-50 rounded-xl p-4">
+              <div className="text-2xl font-bold text-teal-600">
+                {stats.currentHatamPercentage.toFixed(1)}%
+              </div>
+              <p className="text-xs text-gray-600">Progress Hatam Ini</p>
             </div>
           </div>
-
-          <button
-            onClick={handleUpdate}
-            className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
-          >
-            Update Progress
-            <IconCheck className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Statistics */}
@@ -215,26 +118,23 @@ export default function QuranTracker() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-emerald-50 rounded-xl">
               <div className="text-2xl font-bold text-emerald-600">
-                {stats.pace.toFixed(1)}
+                {stats.pacePerHour.toFixed(2)}
               </div>
-              <p className="text-xs text-gray-600">Ayat/Jam</p>
+              <p className="text-xs text-gray-600">Halaman/Jam</p>
             </div>
 
             <div className="text-center p-4 bg-blue-50 rounded-xl">
               <div className="text-2xl font-bold text-blue-600">
-                {stats.finishDate ? formatDate(stats.finishDate) : '-'}
+                {stats.hoursElapsed.toFixed(1)}
               </div>
-              <p className="text-xs text-gray-600">Estimasi Selesai</p>
+              <p className="text-xs text-gray-600">Jam Berlalu</p>
             </div>
 
-            <div className={`text-center p-4 rounded-xl ${stats.daysFromTarget <= 0 ? 'bg-green-50' : 'bg-red-50'}`}>
-              <div className={`text-2xl font-bold ${stats.daysFromTarget <= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {stats.daysFromTarget <= 0 
-                  ? `${Math.abs(stats.daysFromTarget)} hari lebih awal` 
-                  : `${stats.daysFromTarget} hari terlambat`
-                }
+            <div className="text-center p-4 bg-orange-50 rounded-xl">
+              <div className="text-2xl font-bold text-orange-600">
+                {stats.daysRemaining}
               </div>
-              <p className="text-xs text-gray-600">Dari Akhir Ramadhan</p>
+              <p className="text-xs text-gray-600">Hari Tersisa</p>
             </div>
 
             <div className="text-center p-4 bg-purple-50 rounded-xl">
@@ -243,7 +143,22 @@ export default function QuranTracker() {
               </div>
               <p className="text-xs text-gray-600">Akhir Ramadhan</p>
             </div>
-          </div>        
+          </div>
+
+          <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Total Target:</span>
+              <span className="font-semibold">{stats.totalTargetPages} halaman</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Target Saat Ini:</span>
+              <span className="font-semibold">{stats.targetDecimalPage.toFixed(2)} halaman</span>
+            </div>
+            <div className="flex justify-between text-sm text-gray-600">
+              <span>Total Waktu:</span>
+              <span className="font-semibold">{stats.totalHours.toFixed(1)} jam</span>
+            </div>
+          </div>
         </div>
 
         {/* Footer */}

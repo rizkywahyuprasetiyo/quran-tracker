@@ -1,15 +1,12 @@
 import { useState } from 'react';
-import { saveConfig, saveProgress } from '../utils/storage';
-import { SURAH_DATA, TOTAL_AYAT } from '../data/surahData';
+import { saveConfig } from '../utils/storage';
 import { getEndDate } from '../utils/calculations';
-import { SurahSelect } from './SurahSelect';
+import { TOTAL_PAGES } from '../data/pageData';
 import { IconBook, IconChartBar, IconRocket } from '@tabler/icons-react';
 
 export default function SetupForm() {
   const [startDate, setStartDate] = useState('2026-02-19');
   const [targetCount, setTargetCount] = useState(1);
-  const [surahNumber, setSurahNumber] = useState(1);
-  const [ayatNumber, setAyatNumber] = useState(1);
 
   const endDate = getEndDate(new Date(startDate));
 
@@ -21,17 +18,8 @@ export default function SetupForm() {
       targetCount,
     });
     
-    saveProgress({
-      surahNumber: parseInt(surahNumber.toString()),
-      ayatNumber: parseInt(ayatNumber.toString()),
-      lastUpdated: new Date().toISOString(),
-    });
-    
     window.location.href = '/quran-tracker/';
   };
-
-  const selectedSurah = SURAH_DATA.find(s => s[0] === parseInt(surahNumber.toString()));
-  const maxAyat = selectedSurah ? selectedSurah[2] : 7;
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -84,51 +72,12 @@ export default function SetupForm() {
             </div>
           </div>
 
-          <div className="border-t pt-6">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Progress Saat Ini
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Surah Terakhir Dibaca
-                </label>
-                <SurahSelect
-                  value={surahNumber}
-                  onChange={(value) => {
-                    setSurahNumber(value);
-                    setAyatNumber(1);
-                  }}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Ayat Terakhir
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={maxAyat}
-                  value={ayatNumber}
-                  onChange={(e) => setAyatNumber(parseInt(e.target.value) || 1)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Maksimal {maxAyat} ayat
-                </p>
-              </div>
-            </div>
-          </div>
-
           <div className="bg-emerald-50 rounded-lg p-4 text-sm text-emerald-800">
             <p className="font-medium flex items-center gap-2">
             <IconChartBar className="w-4 h-4" />
             Informasi Target:
           </p>
-            <p>Total Ayat: {TOTAL_AYAT * targetCount} ayat ({targetCount}x hatam)</p>
+            <p>Total Halaman: {TOTAL_PAGES * targetCount} halaman ({targetCount}x hatam)</p>
             <p>Periode Ramadhan: 29 hari</p>
             <p>Mulai: {new Date(startDate).toLocaleDateString('id-ID')}</p>
             <p>Selesai: {endDate.toLocaleDateString('id-ID')}</p>
