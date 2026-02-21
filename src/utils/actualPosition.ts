@@ -10,6 +10,16 @@ function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 }
 
+function safeParse<T>(value: string | null): T | null {
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Save actual reading position to localStorage
  */
@@ -32,7 +42,7 @@ export function getActualPosition(): ActualPositionWithMeta | null {
   if (!isBrowser()) return null;
 
   const stored = localStorage.getItem(ACTUAL_POSITION_KEY);
-  return stored ? JSON.parse(stored) : null;
+  return safeParse<ActualPositionWithMeta>(stored);
 }
 
 /**

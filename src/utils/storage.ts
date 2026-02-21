@@ -16,6 +16,16 @@ function isBrowser(): boolean {
   return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 }
 
+function safeParse<T>(value: string | null): T | null {
+  if (!value) return null;
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return null;
+  }
+}
+
 export function saveConfig(config: TrackerConfig): void {
   if (!isBrowser()) return;
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
@@ -24,7 +34,7 @@ export function saveConfig(config: TrackerConfig): void {
 export function getConfig(): TrackerConfig | null {
   if (!isBrowser()) return null;
   const stored = localStorage.getItem(CONFIG_KEY);
-  return stored ? JSON.parse(stored) : null;
+  return safeParse<TrackerConfig>(stored);
 }
 
 export function hasSetup(): boolean {
@@ -53,7 +63,7 @@ export function saveActualPosition(page: number, line: number): void {
 export function getActualPosition(): ActualPosition | null {
   if (!isBrowser()) return null;
   const stored = localStorage.getItem(ACTUAL_POSITION_KEY);
-  return stored ? JSON.parse(stored) : null;
+  return safeParse<ActualPosition>(stored);
 }
 
 /**

@@ -1,181 +1,127 @@
+import { describe, expect, it } from 'vitest';
+
 import {
+  calculateTargetStats,
+  compareActualVsTarget,
+  decimalToPageLine,
   getEndDate,
   getHoursElapsed,
-  getTotalTargetPages,
   getTargetDecimalPage,
-  decimalToPageLine,
-  calculateTargetStats,
-  compareActualVsTarget
+  getTotalTargetPages,
 } from './calculations';
-import { TOTAL_PAGES, LINES_PER_PAGE } from '../data/pageData';
 
-// Test helper
-function assert(condition: boolean, message: string) {
-  if (!condition) {
-    throw new Error(`❌ Test failed: ${message}`);
-  }
-  console.log(`✅ ${message}`);
-}
+describe('calculations utils', () => {
+  it('calculates end date 29 days after start date', () => {
+    const startDate = new Date('2026-02-19');
+    const endDate = getEndDate(startDate);
 
-function assertEqual(actual: number, expected: number, message: string, tolerance: number = 0.01) {
-  const diff = Math.abs(actual - expected);
-  if (diff > tolerance) {
-    throw new Error(`❌ Test failed: ${message}\nExpected: ${expected}\nActual: ${actual}\nDiff: ${diff}`);
-  }
-  console.log(`✅ ${message} (expected: ${expected}, got: ${actual})`);
-}
+    expect(endDate.getDate()).toBe(20);
+    expect(endDate.getMonth()).toBe(2);
+  });
 
-// Run tests
-console.log('🧪 Running calculations tests...\n');
+  it('calculates elapsed hours', () => {
+    const start = new Date('2026-02-19T00:00:00');
+    const now = new Date('2026-02-19T12:00:00');
 
-// Test 1: getEndDate
-console.log('📅 Testing getEndDate...');
-const startDate = new Date('2026-02-19');
-const endDate = getEndDate(startDate);
-assert(endDate.getDate() === 20 && endDate.getMonth() === 2, 'End date should be 29 days after start date'); // March 20
+    expect(getHoursElapsed(start, now)).toBe(12);
+  });
 
-// Test 2: getHoursElapsed
-console.log('\n⏰ Testing getHoursElapsed...');
-const testStart = new Date('2026-02-19T00:00:00');
-const testNow = new Date('2026-02-19T12:00:00');
-assertEqual(getHoursElapsed(testStart, testNow), 12, 'Should calculate 12 hours elapsed');
+  it('returns total target pages for each hatam count', () => {
+    expect(getTotalTargetPages(1)).toBe(604);
+    expect(getTotalTargetPages(2)).toBe(1208);
+    expect(getTotalTargetPages(3)).toBe(1812);
+  });
 
-// Test 3: getTotalTargetPages
-console.log('\n📖 Testing getTotalTargetPages...');
-assertEqual(getTotalTargetPages(1), 604, '1 hatam = 604 pages');
-assertEqual(getTotalTargetPages(2), 1208, '2 hatam = 1208 pages');
-assertEqual(getTotalTargetPages(3), 1812, '3 hatam = 1812 pages');
+  it('returns a reasonable target around halfway', () => {
+    const ramadhanStart = new Date('2026-02-19T00:00:00');
+    const halfwayDate = new Date('2026-03-05T00:00:00');
+    const targetHalfway = getTargetDecimalPage(ramadhanStart, 1, halfwayDate);
 
-// Test 4: getTargetDecimalPage (halfway through)
-console.log('\n🎯 Testing getTargetDecimalPage...');
-const ramadhanStart = new Date('2026-02-19T00:00:00');
-const halfwayDate = new Date('2026-03-05T00:00:00'); // ~14 days later
-const targetHalfway = getTargetDecimalPage(ramadhanStart, 1, halfwayDate);
-// After ~14 days out of 29, should be around 14/29 * 604 = ~291 pages
-assert(targetHalfway >= 280 && targetHalfway <= 310, `Target at halfway should be around 291, got ${targetHalfway}`);
+    expect(targetHalfway).toBeGreaterThanOrEqual(280);
+    expect(targetHalfway).toBeLessThanOrEqual(310);
+  });
 
-// Test 5: decimalToPageLine
-console.log('\n📄 Testing decimalToPageLine...');
-const pos1 = decimalToPageLine(1);
-assertEqual(pos1.page, 1, 'Decimal 1 should be page 1');
-assertEqual(pos1.line, 1, 'Decimal 1 should be line 1');
+  it('converts decimal page to page and line', () => {
+    expect(decimalToPageLine(1)).toEqual({ page: 1, line: 1 });
+    expect(decimalToPageLine(15.5)).toEqual({ page: 15, line: 8 });
+    expect(decimalToPageLine(604.9)).toEqual({ page: 604, line: 14 });
+    expect(decimalToPageLine(604.934)).toEqual({ page: 604, line: 15 });
+  });
 
-const pos15 = decimalToPageLine(15.5);
-assertEqual(pos15.page, 15, 'Decimal 15.5 should be page 15');
-assertEqual(pos15.line, 8, 'Decimal 15.5 should be line 8 (0.5 * 15 rounded up)');
+  it('calculates target stats', () => {
+    const start = new Date('2026-02-19T00:00:00');
+    const now = new Date('2026-02-19T12:00:00');
+    const stats = calculateTargetStats(start, 1, now);
 
-const pos604 = decimalToPageLine(604.9);
-assertEqual(pos604.page, 604, 'Decimal 604.9 should be page 604');
-assertEqual(pos604.line, 14, 'Decimal 604.9 should be line 14 (0.9 * 15 = 13.5 rounded up)');
+    expect(stats.targetDecimalPage).toBeGreaterThan(0);
+    expect(stats.currentHatam).toBe(1);
+    expect(stats.totalProgressPercentage).toBeGreaterThan(0);
+    expect(stats.pacePerHour).toBeCloseTo(604 / (29 * 24));
+    expect(stats.hoursElapsed).toBe(12);
+  });
 
-// Test line 15 (last line)
-const pos604Line15 = decimalToPageLine(604.934);
-assertEqual(pos604Line15.page, 604, 'Decimal 604.934 should be page 604');
-assertEqual(pos604Line15.line, 15, 'Line 15 should be at 604.934+ (604 + 14/15 ≈ 604.933)');
+  it('handles target decimal page edge cases', () => {
+    const start = new Date('2026-02-19T00:00:00');
 
-// Test 6: calculateTargetStats
-console.log('\n📊 Testing calculateTargetStats...');
-const startTest = new Date('2026-02-19T00:00:00');
-const nowTest = new Date('2026-02-19T12:00:00'); // 12 hours in
-const stats = calculateTargetStats(startTest, 1, nowTest);
+    const beforeStart = new Date('2026-02-18');
+    expect(getTargetDecimalPage(start, 1, beforeStart)).toBe(1);
 
-assert(stats.targetDecimalPage > 0, 'Target decimal page should be positive');
-assert(stats.currentHatam === 1, 'Should be in hatam 1');
-assert(stats.totalProgressPercentage > 0, 'Progress percentage should be positive');
-assertEqual(stats.pacePerHour, 604 / (29 * 24), 'Pace should be total pages / total hours');
-assertEqual(stats.hoursElapsed, 12, 'Hours elapsed should be 12');
+    const afterEnd = new Date('2026-03-30');
+    expect(getTargetDecimalPage(start, 1, afterEnd)).toBe(604);
+  });
 
-// Test edge cases
-console.log('\n🔍 Testing edge cases...');
+  it('supports multiple hatam stats', () => {
+    const start = new Date('2026-02-19T00:00:00');
+    const halfwayDate = new Date('2026-03-05T00:00:00');
+    const stats = calculateTargetStats(start, 2, halfwayDate);
 
-// Before start date
-const beforeStart = new Date('2026-02-18');
-const targetBefore = getTargetDecimalPage(startTest, 1, beforeStart);
-assertEqual(targetBefore, 1, 'Before start should return page 1');
+    expect(stats.totalTargetPages).toBe(1208);
+    expect(stats.currentHatam).toBeGreaterThanOrEqual(1);
+    expect(stats.currentHatam).toBeLessThanOrEqual(2);
+  });
+});
 
-// After end date
-const afterEnd = new Date('2026-03-30');
-const targetAfter = getTargetDecimalPage(startTest, 1, afterEnd);
-assertEqual(targetAfter, 604, 'After end should cap at page 604');
+describe('compareActualVsTarget', () => {
+  it('marks status as ahead when actual is more than 1 page ahead', () => {
+    const result = compareActualVsTarget({ page: 50, line: 10 }, { page: 45, line: 5 });
 
-// Multiple hatam
-const stats2Hatam = calculateTargetStats(startTest, 2, halfwayDate);
-assert(stats2Hatam.totalTargetPages === 1208, '2 hatam should have 1208 total pages');
-assert(stats2Hatam.currentHatam >= 1 && stats2Hatam.currentHatam <= 2, 'Should be in hatam 1 or 2');
+    expect(result.status).toBe('ahead');
+    expect(result.totalDifferenceDecimal).toBeGreaterThan(0);
+  });
 
-// Test 7: compareActualVsTarget
-console.log('\n⚖️ Testing compareActualVsTarget...');
+  it('marks status as behind when actual is more than 1 page behind', () => {
+    const result = compareActualVsTarget({ page: 40, line: 5 }, { page: 45, line: 10 });
 
-// Test ahead scenario
-const aheadResult = compareActualVsTarget(
-  { page: 50, line: 10 },
-  { page: 45, line: 5 }
-);
-assert(aheadResult.status === 'ahead', 'Should be ahead when actual > target');
-assert(aheadResult.totalDifferenceDecimal > 0, 'Difference should be positive when ahead');
-console.log(`   Ahead message: "${aheadResult.message}"`);
+    expect(result.status).toBe('behind');
+    expect(result.totalDifferenceDecimal).toBeLessThan(0);
+  });
 
-// Test behind scenario
-const behindResult = compareActualVsTarget(
-  { page: 40, line: 5 },
-  { page: 45, line: 10 }
-);
-assert(behindResult.status === 'behind', 'Should be behind when actual < target');
-assert(behindResult.totalDifferenceDecimal < 0, 'Difference should be negative when behind');
-console.log(`   Behind message: "${behindResult.message}"`);
+  it('marks status as on-track within tolerance', () => {
+    const result = compareActualVsTarget({ page: 45, line: 8 }, { page: 45, line: 5 });
 
-// Test on-track scenario (within tolerance)
-const onTrackResult = compareActualVsTarget(
-  { page: 45, line: 8 },
-  { page: 45, line: 5 }
-);
-assert(onTrackResult.status === 'on-track', 'Should be on-track when within tolerance');
-assert(onTrackResult.message === 'Sesuai target', 'On-track message should be "Sesuai target"');
-console.log(`   On-track message: "${onTrackResult.message}"`);
+    expect(result.status).toBe('on-track');
+    expect(result.message).toBe('Sesuai target');
+  });
 
-// Test exact same position
-const exactResult = compareActualVsTarget(
-  { page: 50, line: 10 },
-  { page: 50, line: 10 }
-);
-assert(exactResult.status === 'on-track', 'Exact same position should be on-track');
-assert(exactResult.totalDifferenceDecimal === 0, 'Difference should be 0 for exact match');
-console.log(`   Exact match message: "${exactResult.message}"`);
+  it('returns on-track and zero difference for exact same position', () => {
+    const result = compareActualVsTarget({ page: 50, line: 10 }, { page: 50, line: 10 });
 
-// Test edge case: page 1, line 1
-const edgeStartResult = compareActualVsTarget(
-  { page: 1, line: 1 },
-  { page: 1, line: 1 }
-);
-assert(edgeStartResult.status === 'on-track', 'Start position should be on-track');
-console.log(`   Edge case (1,1) message: "${edgeStartResult.message}"`);
+    expect(result.status).toBe('on-track');
+    expect(result.totalDifferenceDecimal).toBe(0);
+  });
 
-// Test edge case: last page, last line
-const edgeEndResult = compareActualVsTarget(
-  { page: 604, line: 15 },
-  { page: 604, line: 10 }
-);
-assert(edgeEndResult.status === 'ahead' || edgeEndResult.status === 'on-track', 'End position should be ahead or on-track');
-console.log(`   Edge case (604,15) message: "${edgeEndResult.message}"`);
+  it('keeps line-only differences under one page as on-track', () => {
+    const result = compareActualVsTarget({ page: 10, line: 15 }, { page: 10, line: 1 });
 
-// Test line difference calculation
-const lineDiffResult = compareActualVsTarget(
-  { page: 10, line: 15 },
-  { page: 10, line: 1 }
-);
-assert(lineDiffResult.lineDifference === 14, 'Line difference should be 14');
-assert(lineDiffResult.pageDifference === 0, 'Page difference should be 0');
-// 14 lines difference = 14/15 = 0.933 pages, within tolerance
-assert(lineDiffResult.status === 'on-track', '14 lines difference should still be on-track (within 1 page tolerance)');
-console.log(`   Line diff test: pageDiff=${lineDiffResult.pageDifference}, lineDiff=${lineDiffResult.lineDifference}`);
+    expect(result.pageDifference).toBe(0);
+    expect(result.lineDifference).toBe(14);
+    expect(result.status).toBe('on-track');
+  });
 
-// Test page difference calculation
-const pageDiffResult = compareActualVsTarget(
-  { page: 100, line: 1 },
-  { page: 95, line: 1 }
-);
-assert(pageDiffResult.pageDifference === 5, 'Page difference should be 5');
-assert(pageDiffResult.status === 'ahead', '5 pages ahead should be ahead status');
-console.log(`   Page diff test: pageDiff=${pageDiffResult.pageDifference}, status=${pageDiffResult.status}`);
+  it('reports page differences correctly', () => {
+    const result = compareActualVsTarget({ page: 100, line: 1 }, { page: 95, line: 1 });
 
-console.log('\n🎉 All tests passed!');
+    expect(result.pageDifference).toBe(5);
+    expect(result.status).toBe('ahead');
+  });
+});
