@@ -25,7 +25,7 @@ export default function QuranTracker() {
 
   const handleReset = () => {
     clearAll();
-    window.location.href = '/quran-tracker/setup';
+    window.location.href = '/setup';
   };
 
   const endDate = getEndDate(new Date(stats.startDate || new Date()));

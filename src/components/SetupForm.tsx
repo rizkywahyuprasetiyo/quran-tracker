@@ -17,8 +17,8 @@ export default function SetupForm() {
       startDate,
       targetCount,
     });
-    
-    window.location.href = '/quran-tracker/';
+
+    window.location.href = '/';
   };
 
   return (

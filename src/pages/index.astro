@@ -9,9 +9,9 @@ import QuranTracker from '../components/QuranTracker';
 
 <script>
   import { hasSetup } from '../utils/storage';
-  
+
   // Client-side redirect if not setup
   if (!hasSetup()) {
-    window.location.href = '/quran-tracker/setup';
+    window.location.href = '/setup';
   }
 </script>
