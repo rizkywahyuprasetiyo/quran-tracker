@@ -30,5 +30,8 @@ npm-debug.log*
 .vite/
 .cache/
 
+# Vercel
+.vercel/
+
 # Tanstack (old files)
 .tanstack/

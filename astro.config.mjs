@@ -7,8 +7,6 @@ export default defineConfig({
   integrations: [react()],
   output: 'static',
   srcDir: './src',
-  site: 'https://rizkywahyuprasetiyo.github.io',
-  base: '/quran-tracker',
   vite: {
     plugins: [tailwindcss()],
   },

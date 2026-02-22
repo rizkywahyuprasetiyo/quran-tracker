@@ -21,7 +21,7 @@
 | UI Components | React 19.x |
 | Styling | Tailwind CSS 4.x |
 | Icons | Tabler Icons |
-| Deployment | GitHub Pages |
+| Deployment | Vercel |
 | Language | TypeScript |
 
 ### Architecture
@@ -95,9 +95,9 @@ Runs the calculation unit tests using tsx.
 
 ### Deployment
 
-The project is configured for automatic deployment to GitHub Pages via GitHub Actions:
+The project is configured for automatic deployment to Vercel:
 - Push to `main` branch triggers automatic build and deploy
-- Site URL: `https://rizkywahyuprasetiyo.github.io/quran-tracker`
+- Site URL: `https://quran-tracker-ashen.vercel.app`
 
 ## Development Conventions
 
@@ -162,19 +162,8 @@ interface TrackerConfig {
 | `hasSetup()` | Check if user has completed setup |
 | `clearAll()` | Reset all stored data |
 
-## GitHub Actions Workflow
-
-The deploy workflow (`.github/workflows/deploy.yml`):
-1. Checks out code
-2. Sets up Node.js 20 with npm caching
-3. Installs dependencies (`npm ci`)
-4. Builds with Astro (`npm run build`)
-5. Uploads `dist/` as artifact
-6. Deploys to GitHub Pages
-
 ## Notes
 
 - **No Backend**: All data is stored client-side in localStorage
 - **Static Site**: Built output is fully static HTML/CSS/JS
-- **Base Path**: Configured for `/quran-tracker/` subdirectory deployment
 - **Language**: UI text is in Indonesian (Bahasa Indonesia)
