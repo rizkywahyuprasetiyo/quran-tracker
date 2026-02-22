@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { TOTAL_PAGES, LINES_PER_PAGE } from '../data/pageData';
 import { IconBook, IconX } from '@tabler/icons-react';
+import Toast from './Toast';
+import type { ToastType } from './Toast';
 
 interface ActualPositionInputProps {
   onSave: (page: number, line: number) => void;
@@ -18,11 +20,38 @@ export default function ActualPositionInput({
   const [page, setPage] = useState(currentPage?.toString() || '1');
   const [line, setLine] = useState(currentLine?.toString() || '1');
   const [isEditing, setIsEditing] = useState(!currentPage && !currentLine);
+  const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+  const validateInputs = (): boolean => {
+    const pageNum = parseInt(page);
+    const lineNum = parseInt(line);
+
+    if (isNaN(pageNum) || pageNum < 1) {
+      setToast({ message: 'Halaman tidak boleh kurang dari 1', type: 'error' });
+      return false;
+    } else if (pageNum > TOTAL_PAGES) {
+      setToast({ message: `Halaman tidak boleh lebih dari ${TOTAL_PAGES}`, type: 'error' });
+      return false;
+    }
+
+    if (isNaN(lineNum) || lineNum < 1) {
+      setToast({ message: 'Baris tidak boleh kurang dari 1', type: 'error' });
+      return false;
+    } else if (lineNum > LINES_PER_PAGE) {
+      setToast({ message: `Baris tidak boleh lebih dari ${LINES_PER_PAGE}`, type: 'error' });
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(parseInt(page), parseInt(line));
-    setIsEditing(false);
+    if (validateInputs()) {
+      onSave(parseInt(page), parseInt(line));
+      setIsEditing(false);
+      setToast({ message: 'Posisi berhasil disimpan!', type: 'success' });
+    }
   };
 
   const handleClear = () => {
@@ -39,6 +68,14 @@ export default function ActualPositionInput({
   if (isEditing || (!currentPage && !currentLine)) {
     return (
       <div className="bg-white rounded-2xl shadow-lg p-6">
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+
         <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
           <IconBook className="w-5 h-5 text-emerald-600" />
           Input Posisi Bacaan Aktual
@@ -50,36 +87,24 @@ export default function ActualPositionInput({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Halaman
               </label>
-              <select
+              <input
+                type="number"
                 value={page}
                 onChange={(e) => setPage(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                required
-              >
-                {Array.from({ length: TOTAL_PAGES }, (_, i) => i + 1).map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Baris
               </label>
-              <select
+              <input
+                type="number"
                 value={line}
                 onChange={(e) => setLine(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                required
-              >
-                {Array.from({ length: LINES_PER_PAGE }, (_, i) => i + 1).map((l) => (
-                  <option key={l} value={l}>
-                    {l}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           </div>
 
@@ -96,6 +121,14 @@ export default function ActualPositionInput({
 
   return (
     <div className="bg-white rounded-2xl shadow-lg p-6">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
           <IconBook className="w-5 h-5 text-emerald-600" />

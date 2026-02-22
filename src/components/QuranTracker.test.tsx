@@ -59,7 +59,7 @@ describe('QuranTracker', () => {
           pageDifference: -2,
           lineDifference: -6,
           totalDifferenceDecimal: -2.4,
-          message: '-2.4 halaman tertinggal',
+          message: '2 halaman tertinggal',
         },
       },
       isLoading: false,
@@ -75,7 +75,7 @@ describe('QuranTracker', () => {
 
     expect(screen.getByText('Quran Tracker')).toBeInTheDocument();
     expect(screen.getByText('Hal. 20')).toBeInTheDocument();
-    expect(screen.getByText('-2.4 halaman tertinggal')).toBeInTheDocument();
+    expect(screen.getByText('2 halaman tertinggal')).toBeInTheDocument();
     expect(screen.getByText('Status Progress')).toBeInTheDocument();
   });
 

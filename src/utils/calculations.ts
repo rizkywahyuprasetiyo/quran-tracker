@@ -161,12 +161,12 @@ export function compareActualVsTarget(
 
   if (totalDifferenceDecimal > tolerance) {
     status = 'ahead';
-    const pagesAhead = Math.abs(totalDifferenceDecimal).toFixed(1);
-    message = `+${pagesAhead} halaman di depan`;
+    const pagesAhead = Math.round(Math.abs(totalDifferenceDecimal));
+    message = `${pagesAhead} halaman di depan`;
   } else if (totalDifferenceDecimal < -tolerance) {
     status = 'behind';
-    const pagesBehind = Math.abs(totalDifferenceDecimal).toFixed(1);
-    message = `-${pagesBehind} halaman tertinggal`;
+    const pagesBehind = Math.round(Math.abs(totalDifferenceDecimal));
+    message = `${pagesBehind} halaman tertinggal`;
   } else {
     status = 'on-track';
     message = 'Sesuai target';
